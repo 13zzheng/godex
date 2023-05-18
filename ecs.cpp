@@ -195,6 +195,10 @@ void ECS::preload_scripts() {
 			if (tree->extends.has("Component")) {
 				register_or_get_id_for_component_name(script.get_file());
 			}
+
+			if (tree->extends.has("SystemBundle")) {
+				register_system_bundle(script.get_file());
+			}
 		}
 	}
 }
