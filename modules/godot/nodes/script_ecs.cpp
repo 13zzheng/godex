@@ -97,6 +97,14 @@ void ScriptEcs::reload_scripts() {
 		system_bundles[i]->verified = false;
 	}
 
+	// Remove non-existent scripts.
+	Array scripts = ProjectSettings::get_singleton()->get_setting("ECS/Autoload/scripts");
+	for (int i = scripts.size() - 1; i >=0; i -= 1) {
+		if (!ResourceLoader::exists(scripts[i])) {
+			remove_script("ECS/Autoload/scripts", scripts[i]);
+		}
+	}
+
 	// Scan the script classes.
 	if (EditorFileSystem::get_singleton()->get_filesystem()) {
 		const uint64_t modificatio_time =
