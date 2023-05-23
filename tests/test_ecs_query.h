@@ -1116,9 +1116,9 @@ TEST_CASE("[Modules][ECS] Test DynamicQuery try fetch combination.") {
 								.create_entity()
 								.with(TestAccessMutabilityComponent1());
 
-	world
-			.create_entity()
-			.with(TestAccessMutabilityComponent2());
+	EntityID entity_2 = world
+								.create_entity()
+								.with(TestAccessMutabilityComponent2());
 
 	EntityID entity_3 = world
 								.create_entity()
@@ -1180,6 +1180,40 @@ TEST_CASE("[Modules][ECS] Test DynamicQuery try fetch combination.") {
 		// Nothing to fetch, because `Maybe` and `Without` are meaningless alone.
 		CHECK(query.next() == false);
 		CHECK(query.count() == 0);
+	}
+
+	{
+		// Check 'Any'.
+		godex::DynamicQuery query1;
+		query1.select_component(TestAccessMutabilityComponent1::get_component_id());
+		query1.select_component(TestAccessMutabilityComponent2::get_component_id());
+		query1.any({TestAccessMutabilityComponent1::get_component_id(), TestAccessMutabilityComponent2::get_component_id()});
+		query1.initiate_process(&world);
+
+		CHECK(query1.has(entity_1));
+		CHECK(query1.has(entity_2));
+		CHECK(query1.has(entity_3));
+
+		godex::DynamicQuery query2;
+		query2.select_component(TestAccessMutabilityComponent1::get_component_id());
+		query2.select_component(TestAccessMutabilityComponent2::get_component_id());
+		query2.any({query2.without(TestAccessMutabilityComponent1::get_component_id()), TestAccessMutabilityComponent2::get_component_id()});
+		query2.initiate_process(&world);
+
+		CHECK(!query2.has(entity_1));
+		CHECK(query2.has(entity_2));
+		CHECK(query2.has(entity_3));
+
+
+		godex::DynamicQuery query3;
+		query3.select_component(TestAccessMutabilityComponent1::get_component_id());
+		query3.select_component(TestAccessMutabilityComponent2::get_component_id());
+		query3.any({TestAccessMutabilityComponent1::get_component_id(), query3.without(TestAccessMutabilityComponent2::get_component_id())});
+		query3.initiate_process(&world);
+
+		CHECK(query3.has(entity_1));
+		CHECK(!query3.has(entity_2));
+		CHECK(query3.has(entity_3));
 	}
 }
 
