@@ -162,7 +162,7 @@ public:
 	uint32_t without(uint32_t p_component_id);
 	uint32_t maybe(uint32_t p_component_id);
 	uint32_t changed(uint32_t p_component_id);
-	void any(const PackedInt64Array &p_element_ids);
+	void any(const PackedInt32Array &p_component_ids);
 
 	uint32_t _insert_element_oper(uint32_t p_component_id, SelectOperator oper);
 

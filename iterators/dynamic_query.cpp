@@ -153,8 +153,10 @@ EntitiesBuffer DynamicQuerySelectAny::get_entities() {
 	if (any_determinant()) {
 		for (uint32_t i = 0; i < select_elements.size(); i += 1) {
 			EntitiesBuffer eb = select_elements[i]->get_entities();
-			for (uint32_t j = 0; j < eb.count; j += 1) {
-				entities.insert(eb.entities[j]);
+			if (eb.count != UINT32_MAX) {
+				for (uint32_t j = 0; j < eb.count; j += 1) {
+					entities.insert(eb.entities[j]);
+				}
 			}
 		}
 		return EntitiesBuffer (entities.size(), entities.get_entities_ptr());
@@ -178,15 +180,16 @@ bool DynamicQuerySelectAny::filter_satisfied(EntityID p_entity) const {
 
 void DynamicQuery::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_space", "space"), &DynamicQuery::set_space);
-	ClassDB::bind_method(D_METHOD("with_component", "component_id", "mutable"), &DynamicQuery::with_component);
-	ClassDB::bind_method(D_METHOD("maybe_component", "component_id", "mutable"), &DynamicQuery::maybe_component);
-	ClassDB::bind_method(D_METHOD("changed_component", "component_id", "mutable"), &DynamicQuery::changed_component);
+	ClassDB::bind_method(D_METHOD("with_component", "component_id", "is_mutable"), &DynamicQuery::with_component);
+	ClassDB::bind_method(D_METHOD("maybe_component", "component_id", "is_mutable"), &DynamicQuery::maybe_component);
+	ClassDB::bind_method(D_METHOD("changed_component", "component_id", "is_mutable"), &DynamicQuery::changed_component);
 	ClassDB::bind_method(D_METHOD("not_component", "component_id"), &DynamicQuery::not_component);
 
-	ClassDB::bind_method(D_METHOD("select_component", "component_id", "mutable"), &DynamicQuery::select_component);
-	ClassDB::bind_method(D_METHOD("without", "element_id"), &DynamicQuery::without);
-	ClassDB::bind_method(D_METHOD("maybe", "element_id"), &DynamicQuery::maybe);
-	ClassDB::bind_method(D_METHOD("changed", "element_id"), &DynamicQuery::changed);
+	ClassDB::bind_method(D_METHOD("select_component", "component_id", "is_mutable"), &DynamicQuery::select_component);
+	ClassDB::bind_method(D_METHOD("without", "component_id"), &DynamicQuery::without);
+	ClassDB::bind_method(D_METHOD("maybe", "component_id"), &DynamicQuery::maybe);
+	ClassDB::bind_method(D_METHOD("changed", "component_id"), &DynamicQuery::changed);
+	ClassDB::bind_method(D_METHOD("any", "component_ids"), &DynamicQuery::any);
 
 
 	ClassDB::bind_method(D_METHOD("is_valid"), &DynamicQuery::is_valid);
@@ -230,7 +233,7 @@ uint32_t DynamicQuery::changed(uint32_t p_component_id) {
 	return _insert_element_oper(p_component_id, CHANGED);
 }
 
-void DynamicQuery::any(const PackedInt64Array &p_component_ids) {
+void DynamicQuery::any(const PackedInt32Array &p_component_ids) {
 
 	for (int32_t i = 0; i < p_component_ids.size(); i += 1) {
 		int64_t element_idx = find_element_by_component_id(p_component_ids[i]);
